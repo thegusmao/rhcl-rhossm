@@ -26,7 +26,7 @@ O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está
 │   ├── applications/       # App-of-apps: AppProjects + Applications
 │   ├── foundation/         # Subscriptions OLM (operadores globais)
 │   ├── infra/
-│   │   ├── namespaces/     # istio-system, istio-cni, kuadrant-system
+│   │   ├── namespaces/     # namespaces, ClusterRole/Binding GitOps (sailoperator.io, …)
 │   │   ├── service-mesh/     # Istio, IstioCNI, Kiali, OpenTelemetry
 │   │   └── connectivity-link/  # Kuadrant (RHCL)
 │   ├── service-mesh/       # Config por ambiente (platform/dev) — futuro
@@ -51,7 +51,7 @@ flowchart LR
 
 1. **Bootstrap** — `Application` `lab-rhcl-ossm` sincroniza `manifests/applications`.
 2. **foundation** (sync-wave 0) — operadores OLM em `manifests/foundation`.
-3. **infra** (sync-wave 1) — namespaces em `manifests/infra/namespaces`.
+3. **infra** (sync-wave 1) — `manifests/infra/namespaces` (RBAC cluster para o controller + namespaces com `managed-by`).
 4. **service-mesh-infra** (sync-wave 2) — `manifests/infra/service-mesh`.
 5. **connectivity-link-infra** (sync-wave 3) — `manifests/infra/connectivity-link`.
 
@@ -92,6 +92,22 @@ oc apply -f bootstrap/04-application-lab-rhcl-ossm.yaml
 ```
 
 O Argo CD passa a gerenciar `foundation`, `infra`, `service-mesh-infra` e `connectivity-link-infra` automaticamente.
+
+## RBAC do GitOps (Istio / IstioCNI cluster-scoped)
+
+`Istio` e `IstioCNI` (`sailoperator.io`) são **Cluster-scoped**. O label `managed-by` nos namespaces não basta; a Application `infra` aplica:
+
+- `ClusterRole` `openshift-gitops-infra-platform`
+- `ClusterRoleBinding` para `openshift-gitops-argocd-application-controller` em `openshift-gitops`
+
+Inclui também permissões antecipadas para Kiali, Kuadrant, OpenTelemetry, `ClusterRoleBinding` do Kiali, Gateway API e APIs Istio usadas nas fases `platform`/`dev`.
+
+Se o sync de `infra` falhar ao criar o `ClusterRoleBinding`, aplique uma vez com cluster-admin:
+
+```bash
+oc apply -f manifests/infra/namespaces/clusterrole-openshift-gitops-infra.yaml
+oc apply -f manifests/infra/namespaces/clusterrolebinding-openshift-gitops-infra.yaml
+```
 
 ## Validação
 

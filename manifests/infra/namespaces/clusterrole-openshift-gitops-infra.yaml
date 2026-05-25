@@ -1,0 +1,50 @@
+# ClusterRole — permissões do Argo CD para CRs de plataforma (infra GitOps)
+#
+# Istio/IstioCNI são cluster-scoped (sailoperator.io). managed-by em namespace
+# não cobre esses recursos; o ClusterRoleBinding abaixo delega ao controller.
+#
+# Inclui APIs usadas em service-mesh-infra, connectivity-link-infra e fases
+# platform/dev (Gateway API, Istio networking/security).
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: openshift-gitops-infra-platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+rules:
+  - apiGroups: ["sailoperator.io"]
+    resources:
+      - istios
+      - istiocnis
+      - istiorevisions
+      - istiorevisiontags
+      - ztunnels
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kiali.io"]
+    resources: ["kialis", "ossmconsoles"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["kuadrant.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["opentelemetry.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups:
+      - networking.istio.io
+      - security.istio.io
+      - telemetry.istio.io
+      - extensions.istio.io
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups:
+      - gateway.networking.k8s.io
+      - gateway.networking.x-k8s.io
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterrolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles"]
+    verbs: ["get", "list", "watch"]

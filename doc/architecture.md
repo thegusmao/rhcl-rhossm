@@ -162,7 +162,7 @@ A instalação base no repositório [rhcl-rhossm](https://github.com/thegusmao/r
 | Wave | Application | Manifest path |
 |------|-------------|---------------|
 | 0 | `foundation` | `manifests/foundation` — Subscriptions OLM |
-| 1 | `infra` | `manifests/infra/namespaces` |
+| 1 | `infra` | `manifests/infra/namespaces` — namespaces, `ClusterRole`/`ClusterRoleBinding` GitOps (`sailoperator.io` cluster-scoped) |
 | 2 | `service-mesh-infra` | `manifests/infra/service-mesh` — Istio, Kiali, OpenTelemetry |
 | 3 | `connectivity-link-infra` | `manifests/infra/connectivity-link` — Kuadrant |
 

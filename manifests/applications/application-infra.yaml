@@ -1,6 +1,6 @@
-# Application infra — Namespaces de plataforma (istio-system, istio-cni, kuadrant-system)
+# Application infra — Namespaces + RBAC GitOps (ClusterRole/Binding para sailoperator.io)
 #
-# sync-wave 1: depende dos CSVs (foundation). Mesh e RHCL seguem nas Applications dedicadas.
+# sync-wave 1: RBAC (waves -2/-1 nos manifests) antes dos namespaces; depois mesh/RHCL.
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
