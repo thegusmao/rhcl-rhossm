@@ -11,8 +11,8 @@ metadata:
   name: servicemeshoperator3
   namespace: openshift-operators
 spec:
-  channel: stable-3.2
-  installPlanApproval: Automatic
+  channel: stable
+  installPlanApproval: Manual
   name: servicemeshoperator3
   source: redhat-operators
   sourceNamespace: openshift-marketplace
