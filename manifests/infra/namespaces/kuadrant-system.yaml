@@ -1,0 +1,8 @@
+# Namespace do CR Kuadrant e componentes RHCL
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kuadrant-system
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops

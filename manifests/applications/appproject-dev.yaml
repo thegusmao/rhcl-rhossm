@@ -1,0 +1,20 @@
+# AppProject dev — workloads e políticas por aplicação (Applications futuras)
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: dev
+  namespace: openshift-gitops
+spec:
+  destinations:
+    - name: local
+      namespace: '*-apps'
+      server: https://kubernetes.default.svc
+    - name: local
+      namespace: bookinfo
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - '*'

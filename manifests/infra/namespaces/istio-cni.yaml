@@ -1,0 +1,8 @@
+# Namespace do plugin Istio CNI
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-cni
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops

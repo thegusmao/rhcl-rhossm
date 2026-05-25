@@ -1,0 +1,8 @@
+# Namespace do control plane Istio (OSSM 3 sidecar mode)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops

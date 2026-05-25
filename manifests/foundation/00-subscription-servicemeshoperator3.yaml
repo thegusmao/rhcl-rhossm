@@ -1,0 +1,18 @@
+# Red Hat OpenShift Service Mesh 3.2 — Sail Operator (instalação global / All Namespaces)
+#
+# Namespace openshift-operators já possui OperatorGroup global pré-provisionado pelo OCP.
+# Channel stable-3.2 restringe atualizações à linha 3.2.x.
+#
+# Referência: https://docs.redhat.com/en/documentation/red_hat_openshift_service_mesh/3.2/html/installing/ossm-installing-service-mesh
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: servicemeshoperator3
+  namespace: openshift-operators
+spec:
+  channel: stable-3.2
+  installPlanApproval: Automatic
+  name: servicemeshoperator3
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

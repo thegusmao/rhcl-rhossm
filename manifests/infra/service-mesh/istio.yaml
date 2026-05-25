@@ -1,0 +1,17 @@
+# Istio control plane — OSSM 3.2 sidecar mode (InPlace update)
+#
+# v1.27-latest aplica o patch mais recente suportado na linha 1.27 (OSSM 3.2).
+# discoverySelectors para platform/dev serão adicionados em manifests/service-mesh/.
+#
+# Referência: https://docs.redhat.com/en/documentation/red_hat_openshift_service_mesh/3.2/html/installing/ossm-installing-service-mesh
+---
+apiVersion: sailoperator.io/v1
+kind: Istio
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  namespace: istio-system
+  version: v1.27-latest
+  updateStrategy:
+    type: InPlace

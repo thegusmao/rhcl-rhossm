@@ -1,0 +1,17 @@
+# Red Hat Connectivity Link 1.3 — Operator (instalação global / All Namespaces)
+#
+# O CR Kuadrant é criado em manifests/infra/connectivity-link/ (namespace kuadrant-system).
+#
+# Referência: https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.3/html/installing_on_openshift_container_platform/rhcl-install-on-ocp
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rhcl-operator
+  namespace: openshift-operators
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: rhcl-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

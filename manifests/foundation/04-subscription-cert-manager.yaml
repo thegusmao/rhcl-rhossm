@@ -1,0 +1,20 @@
+# cert-manager Operator for Red Hat OpenShift — pré-requisito do RHCL 1.3
+#
+# Instalação global em openshift-operators (All Namespaces).
+# Se o operador já existir em cert-manager-operator, compare antes de sincronizar:
+#   oc get subscription -A | grep cert-manager
+# Remova este manifesto ou ajuste metadata.name/namespace se houver conflito OLM.
+#
+# Referência: https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/security_and_compliance/cert-manager-operator-for-red-hat-openshift
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-cert-manager-operator
+  namespace: openshift-operators
+spec:
+  channel: stable-v1
+  installPlanApproval: Automatic
+  name: openshift-cert-manager-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

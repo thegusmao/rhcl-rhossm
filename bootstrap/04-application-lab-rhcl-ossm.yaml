@@ -1,0 +1,34 @@
+# Application lab-rhcl-ossm — App-of-apps (manifests/applications)
+#
+# Sincroniza AppProjects e child Applications (foundation, infra, …) a partir
+# do repositório Git configurado em 03-secret-lab-rhcl-ossm.yaml.
+#
+# Pré-requisitos:
+#   - Operador OpenShift GitOps instalado (00-subscription.yaml)
+#   - Secret de repositório aplicado (03-secret-lab-rhcl-ossm.yaml)
+#   - AppProject infra em manifests/applications/appproject-infra.yaml
+#
+# Ajuste repoURL para corresponder exatamente à URL do secret.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lab-rhcl-ossm
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: infra
+  source:
+    repoURL: https://github.com/thegusmao/rhcl-rhossm.git
+    targetRevision: main
+    path: manifests/applications
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true

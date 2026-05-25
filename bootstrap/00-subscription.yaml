@@ -1,0 +1,31 @@
+# Red Hat OpenShift GitOps Operator — Subscription via OLM
+#
+# Instala o operador OpenShift GitOps no cluster via Operator Lifecycle Manager (OLM).
+# O operador provisiona automaticamente a instância Argo CD no namespace
+# `openshift-gitops` (CR ArgoCD/openshift-gitops).
+#
+# O namespace `openshift-operators` já possui um OperatorGroup global (AllNamespaces)
+# pré-provisionado pelo OCP. NÃO é necessário criar um OperatorGroup adicional.
+#
+# Pré-requisitos:
+#   - Cluster OpenShift 4.12+
+#   - Acesso ao CatalogSource `redhat-operators` (padrão no OCP conectado)
+#   - Permissão cluster-admin para criar Subscriptions
+#
+# Após aplicar, verifique com:
+#   oc get csv -n openshift-operators | grep gitops
+#   oc wait argocd/openshift-gitops -n openshift-gitops --for=condition=Available --timeout=300s
+#
+# Referência: https://docs.redhat.com/en/documentation/red_hat_openshift_gitops
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-operators
+spec:
+  channel: latest
+  installPlanApproval: Automatic
+  name: openshift-gitops-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

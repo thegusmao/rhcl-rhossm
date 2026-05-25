@@ -1,0 +1,23 @@
+# Kiali — console de observabilidade do Service Mesh
+---
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  auth:
+    strategy: openshift
+  deployment:
+    namespace: istio-system
+  external_services:
+    prometheus:
+      auth:
+        type: bearer
+        use_kiali_token: true
+      thanos_proxy:
+        enabled: true
+      url: https://thanos-querier.openshift-monitoring.svc:9091
+    tracing:
+      enabled: false
+  istio_namespace: istio-system

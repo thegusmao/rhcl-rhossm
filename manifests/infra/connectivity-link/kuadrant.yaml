@@ -1,0 +1,9 @@
+# Red Hat Connectivity Link — CR Kuadrant (instala Authorino, Limitador, DNS Operator)
+#
+# Referência: https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.3/html/installing_on_openshift_container_platform/rhcl-install-on-ocp
+---
+apiVersion: kuadrant.io/v1beta1
+kind: Kuadrant
+metadata:
+  name: kuadrant
+  namespace: kuadrant-system

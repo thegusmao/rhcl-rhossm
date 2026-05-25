@@ -1,0 +1,29 @@
+# AppProject platform — configurações compartilhadas de Service Mesh e Connectivity Link
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: openshift-gitops
+spec:
+  destinations:
+    - name: local
+      namespace: istio-system
+      server: https://kubernetes.default.svc
+    - name: local
+      namespace: istio-cni
+      server: https://kubernetes.default.svc
+    - name: local
+      namespace: kuadrant-system
+      server: https://kubernetes.default.svc
+    - name: local
+      namespace: openshift-ingress
+      server: https://kubernetes.default.svc
+    - name: local
+      namespace: kuadrant-dns
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - '*'
