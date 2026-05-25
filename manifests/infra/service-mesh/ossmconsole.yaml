@@ -1,0 +1,19 @@
+# OSSM Console (OSSMC) — plugin do console OpenShift integrado ao Kiali
+#
+# Requer Kiali Operator + CR Kiali no mesmo mesh. spec.version default alinha com o operador.
+# Recursos do plugin são implantados no namespace deste CR (istio-system).
+#
+# Referência: https://docs.redhat.com/en/documentation/red_hat_openshift_service_mesh/3.2/html/observability/kiali-operator-provided-by-red-hat
+---
+apiVersion: kiali.io/v1alpha1
+kind: OSSMConsole
+metadata:
+  name: ossmconsole
+  namespace: istio-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  version: default
+  kiali:
+    serviceName: kiali
+    serviceNamespace: istio-system

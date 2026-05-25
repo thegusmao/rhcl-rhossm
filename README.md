@@ -11,7 +11,8 @@ Repositório: [github.com/thegusmao/rhcl-rhossm](https://github.com/thegusmao/rh
 | OpenShift GitOps | OperatorHub | Argo CD / sync declarativo |
 | OSSM (Sail Operator) | 3.2 (`stable-3.2`) | Control plane Istio, sidecar injection |
 | RHCL (Kuadrant) | 1.3 | Gateway API, políticas DNS/TLS/rate limit |
-| Kiali | 2.17.x | Console e topologia do mesh |
+| Kiali | 2.17.x | Console standalone e topologia do mesh |
+| OSSM Console (OSSMC) | via Kiali Operator | Plugin Service Mesh no console OpenShift |
 | OpenTelemetry | Red Hat build | Coleta de telemetria (base para Tempo) |
 | cert-manager | Red Hat OpenShift | TLS para gateways (pré-requisito RHCL) |
 
@@ -27,7 +28,7 @@ O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está
 │   ├── foundation/         # Subscriptions OLM (operadores globais)
 │   ├── infra/
 │   │   ├── namespaces/     # namespaces, ClusterRole/Binding GitOps (sailoperator.io, …)
-│   │   ├── service-mesh/     # Istio, IstioCNI, Kiali, OpenTelemetry
+│   │   ├── service-mesh/     # Istio, IstioCNI, Kiali, OSSMConsole, OpenTelemetry
 │   │   └── connectivity-link/  # Kuadrant (RHCL)
 │   ├── service-mesh/       # Config por ambiente (platform/dev) — futuro
 │   └── connectivity-link/  # Config RHCL por ambiente — futuro
@@ -45,7 +46,7 @@ flowchart LR
   Apps --> RhclApp[connectivity-link-infra wave 3]
   Foundation --> Operators[CSV em openshift-operators]
   Infra --> NS[Namespaces]
-  MeshApp --> Mesh[Istio Kiali OTel]
+  MeshApp --> Mesh[Istio Kiali OSSMConsole OTel]
   RhclApp --> RHCL[Kuadrant CR]
 ```
 
@@ -125,7 +126,12 @@ oc wait kuadrant/kuadrant -n kuadrant-system --for=condition=Ready=true --timeou
 # Kiali
 oc get kiali -n istio-system
 oc get route kiali -n istio-system
+
+# OSSM Console plugin (após Kiali Ready)
+oc get ossmconsole -n istio-system
 ```
+
+No console OpenShift: categoria **Service Mesh** no menu principal (refresh do browser se solicitado após o install do plugin).
 
 ## AppProjects
 

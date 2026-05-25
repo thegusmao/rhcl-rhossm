@@ -163,7 +163,7 @@ A instalação base no repositório [rhcl-rhossm](https://github.com/thegusmao/r
 |------|-------------|---------------|
 | 0 | `foundation` | `manifests/foundation` — Subscriptions OLM |
 | 1 | `infra` | `manifests/infra/namespaces` — namespaces, `ClusterRole`/`ClusterRoleBinding` GitOps (`sailoperator.io` cluster-scoped) |
-| 2 | `service-mesh-infra` | `manifests/infra/service-mesh` — Istio, Kiali, OpenTelemetry |
+| 2 | `service-mesh-infra` | `manifests/infra/service-mesh` — Istio, Kiali, OSSMConsole, OpenTelemetry |
 | 3 | `connectivity-link-infra` | `manifests/infra/connectivity-link` — Kuadrant |
 
 Configurações por ambiente (Gateway API, `DNSPolicy`, sidecar labels) evoluem em `manifests/service-mesh/{platform,dev}` e `manifests/connectivity-link/{platform,dev}` com AppProjects `platform` e `dev`.
