@@ -1,15 +1,14 @@
-# Application foundation — Subscriptions OLM (OSSM, RHCL, Kiali, OTel, cert-manager)
+# Application connectivity-link-infra — CR Kuadrant (RHCL)
 #
-# sync-wave 0: instalar operadores antes das Applications de infra (namespaces, mesh, RHCL).
-# Ajuste repoURL para corresponder à URL do secret em bootstrap/03-secret-lab-rhcl-ossm.yaml.
+# sync-wave 3: depende do OSSM e do namespace kuadrant-system (infra).
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: foundation
+  name: connectivity-link-infra
   namespace: openshift-gitops
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "3"
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
@@ -17,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/thegusmao/rhcl-rhossm.git
     targetRevision: main
-    path: manifests/foundation
+    path: manifests/infra/connectivity-link
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
@@ -26,3 +25,4 @@ spec:
       selfHeal: true
     syncOptions:
       - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true

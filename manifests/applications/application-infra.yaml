@@ -1,6 +1,6 @@
-# Application infra — Namespaces, Istio, Kiali, OpenTelemetry, Kuadrant
+# Application infra — Namespaces de plataforma (istio-system, istio-cni, kuadrant-system)
 #
-# sync-wave 1: depende dos CSVs instalados pela Application foundation.
+# sync-wave 1: depende dos CSVs (foundation). Mesh e RHCL seguem nas Applications dedicadas.
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application

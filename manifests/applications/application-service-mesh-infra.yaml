@@ -1,15 +1,14 @@
-# Application foundation — Subscriptions OLM (OSSM, RHCL, Kiali, OTel, cert-manager)
+# Application service-mesh-infra — Istio, IstioCNI, Kiali, OpenTelemetry
 #
-# sync-wave 0: instalar operadores antes das Applications de infra (namespaces, mesh, RHCL).
-# Ajuste repoURL para corresponder à URL do secret em bootstrap/03-secret-lab-rhcl-ossm.yaml.
+# sync-wave 2: depende dos namespaces (infra) e dos CSVs (foundation).
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: foundation
+  name: service-mesh-infra
   namespace: openshift-gitops
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "2"
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
@@ -17,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/thegusmao/rhcl-rhossm.git
     targetRevision: main
-    path: manifests/foundation
+    path: manifests/infra/service-mesh
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
@@ -26,3 +25,4 @@ spec:
       selfHeal: true
     syncOptions:
       - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true

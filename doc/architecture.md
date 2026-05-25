@@ -155,6 +155,19 @@ spec:
 * **Zero-Trust Loopback**: Unlike Ambient mode where encryption happens at the node transport layer, OSSM 3 Sidecar mode terminates mTLS directly inside the application container network interface.
 * **Cross-Cluster Fallback**: If `Aplicação B` fails locally in Cluster A, the local Envoy sidecar intercepts the 503 error and automatically reroutes the request over the East-West Gateway (`10.10.10.X`) to the healthy sidecar instance in Cluster B.
 
+## GitOps layout (OpenShift GitOps)
+
+A instalação base no repositório [rhcl-rhossm](https://github.com/thegusmao/rhcl-rhossm) segue app-of-apps com sync-waves:
+
+| Wave | Application | Manifest path |
+|------|-------------|---------------|
+| 0 | `foundation` | `manifests/foundation` — Subscriptions OLM |
+| 1 | `infra` | `manifests/infra/namespaces` |
+| 2 | `service-mesh-infra` | `manifests/infra/service-mesh` — Istio, Kiali, OpenTelemetry |
+| 3 | `connectivity-link-infra` | `manifests/infra/connectivity-link` — Kuadrant |
+
+Configurações por ambiente (Gateway API, `DNSPolicy`, sidecar labels) evoluem em `manifests/service-mesh/{platform,dev}` e `manifests/connectivity-link/{platform,dev}` com AppProjects `platform` e `dev`.
+
 ## Support & Lifecycle
 
 ### ⚠️ Architecture Warnings & Support Status

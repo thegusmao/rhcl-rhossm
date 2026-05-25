@@ -25,7 +25,10 @@ O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está
 ├── manifests/
 │   ├── applications/       # App-of-apps: AppProjects + Applications
 │   ├── foundation/         # Subscriptions OLM (operadores globais)
-│   ├── infra/              # Namespaces, Istio, Kiali, OTel, Kuadrant
+│   ├── infra/
+│   │   ├── namespaces/     # istio-system, istio-cni, kuadrant-system
+│   │   ├── service-mesh/     # Istio, IstioCNI, Kiali, OpenTelemetry
+│   │   └── connectivity-link/  # Kuadrant (RHCL)
 │   ├── service-mesh/       # Config por ambiente (platform/dev) — futuro
 │   └── connectivity-link/  # Config RHCL por ambiente — futuro
 └── doc/
@@ -38,14 +41,26 @@ flowchart LR
   Bootstrap[lab-rhcl-ossm] --> Apps[manifests/applications]
   Apps --> Foundation[foundation wave 0]
   Apps --> Infra[infra wave 1]
+  Apps --> MeshApp[service-mesh-infra wave 2]
+  Apps --> RhclApp[connectivity-link-infra wave 3]
   Foundation --> Operators[CSV em openshift-operators]
-  Infra --> Mesh[Istio Kiali OTel]
-  Infra --> RHCL[Kuadrant CR]
+  Infra --> NS[Namespaces]
+  MeshApp --> Mesh[Istio Kiali OTel]
+  RhclApp --> RHCL[Kuadrant CR]
 ```
 
 1. **Bootstrap** — `Application` `lab-rhcl-ossm` sincroniza `manifests/applications`.
-2. **foundation** (sync-wave 0) — instala operadores via OLM.
-3. **infra** (sync-wave 1) — namespaces, mesh e Connectivity Link.
+2. **foundation** (sync-wave 0) — operadores OLM em `manifests/foundation`.
+3. **infra** (sync-wave 1) — namespaces em `manifests/infra/namespaces`.
+4. **service-mesh-infra** (sync-wave 2) — `manifests/infra/service-mesh`.
+5. **connectivity-link-infra** (sync-wave 3) — `manifests/infra/connectivity-link`.
+
+| Application | Path | Projeto |
+|-------------|------|---------|
+| `foundation` | `manifests/foundation` | `infra` |
+| `infra` | `manifests/infra/namespaces` | `infra` |
+| `service-mesh-infra` | `manifests/infra/service-mesh` | `infra` |
+| `connectivity-link-infra` | `manifests/infra/connectivity-link` | `infra` |
 
 ## Pré-requisitos
 
@@ -76,7 +91,7 @@ oc apply -f bootstrap/03-secret-lab-rhcl-ossm.yaml
 oc apply -f bootstrap/04-application-lab-rhcl-ossm.yaml
 ```
 
-O Argo CD passa a gerenciar `foundation` e `infra` automaticamente.
+O Argo CD passa a gerenciar `foundation`, `infra`, `service-mesh-infra` e `connectivity-link-infra` automaticamente.
 
 ## Validação
 
@@ -100,7 +115,7 @@ oc get route kiali -n istio-system
 
 | Projeto | Uso |
 |---------|-----|
-| `infra` | Operadores, instalação base (`foundation`, `infra`) |
+| `infra` | Operadores e instalação base (`foundation`, `infra`, `service-mesh-infra`, `connectivity-link-infra`) |
 | `platform` | Recursos compartilhados em namespaces de plataforma (futuro) |
 | `dev` | Workloads e políticas por aplicação (futuro) |
 

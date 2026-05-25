@@ -1,6 +1,7 @@
 # Application lab-rhcl-ossm — App-of-apps (manifests/applications)
 #
-# Sincroniza AppProjects e child Applications (foundation, infra, …) a partir
+# Sincroniza AppProjects e child Applications (foundation, infra, service-mesh-infra,
+# connectivity-link-infra, …) a partir
 # do repositório Git configurado em 03-secret-lab-rhcl-ossm.yaml.
 #
 # Pré-requisitos:
