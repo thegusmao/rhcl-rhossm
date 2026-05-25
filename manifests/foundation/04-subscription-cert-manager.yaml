@@ -6,15 +6,15 @@
 # Remova este manifesto ou ajuste metadata.name/namespace se houver conflito OLM.
 #
 # Referência: https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/security_and_compliance/cert-manager-operator-for-red-hat-openshift
----
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: openshift-cert-manager-operator
-  namespace: openshift-operators
-spec:
-  channel: stable-v1
-  installPlanApproval: Automatic
-  name: openshift-cert-manager-operator
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace
+#---
+#apiVersion: operators.coreos.com/v1alpha1
+#kind: Subscription
+#metadata:
+#  name: openshift-cert-manager-operator
+#  namespace: openshift-operators
+#spec:
+#  channel: stable-v1
+#  installPlanApproval: Automatic
+#  name: openshift-cert-manager-operator
+#  source: redhat-operators
+#  sourceNamespace: openshift-marketplace
