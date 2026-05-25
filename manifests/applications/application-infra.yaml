@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/thegusmao/rhcl-rhossm.git
     targetRevision: main
-    path: manifests/infra
+    path: manifests/infra/namespaces
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
