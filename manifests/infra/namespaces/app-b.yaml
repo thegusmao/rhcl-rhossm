@@ -1,4 +1,4 @@
-# Namespace da aplicação A (projeto dev)
+# Namespace da aplicação B (projeto dev)
 ---
 apiVersion: v1
 kind: Namespace
@@ -8,3 +8,4 @@ metadata:
     argocd.argoproj.io/managed-by: openshift-gitops
     istio-discovery: enabled
     istio-injection: enabled
+    openshift.io/user-monitoring: "true"

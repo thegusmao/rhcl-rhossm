@@ -1,0 +1,22 @@
+# User Workload Monitoring — Prometheus para workloads do usuário
+#
+# Habilita enableUserWorkload no cluster-monitoring-config. O OCP implanta
+# Prometheus/Thanos em openshift-user-workload-monitoring, que coleta
+# PodMonitors e ServiceMonitors (ex.: métricas istio-proxy em app-a/app-b).
+#
+# O Kiali consulta métricas via Thanos Querier (cluster + user workload):
+#   https://thanos-querier.openshift-monitoring.svc:9091
+#
+# Verificação:
+#   oc get pods -n openshift-user-workload-monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  config.yaml: |
+    enableUserWorkload: true

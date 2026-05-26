@@ -12,6 +12,7 @@ Multi-cluster on-premises hybrid connectivity architecture blueprint using Red H
 * **Corporate DNS Master**: BIND9 VM or A10 Networks Appliance (Zone Authority)
 * **Certificate Lifecycle**: cert-manager Operator 1.18 (Automated `TLSPolicy` rotation)
 * **Unified Observability**: Kiali Engine + OSSMC (OpenShift Service Mesh Console plugin)
+* **Metrics Collection**: OpenShift User Workload Monitoring (`PodMonitor` para sidecars Envoy; Thanos Querier agrega cluster + user workload)
 
 ## Architecture
 
@@ -162,11 +163,20 @@ A instalação base no repositório [rhcl-rhossm](https://github.com/thegusmao/r
 | Wave | Application | Manifest path |
 |------|-------------|---------------|
 | 0 | `foundation` | `manifests/foundation` — Subscriptions OLM |
-| 1 | `infra` | `manifests/infra/namespaces` — namespaces, `ClusterRole`/`ClusterRoleBinding` GitOps (`sailoperator.io` cluster-scoped) |
+| 1 | `infra` | `manifests/infra/namespaces` — namespaces, `cluster-monitoring-config` (`enableUserWorkload`), `ClusterRole`/`ClusterRoleBinding` GitOps (`sailoperator.io` cluster-scoped) |
 | 2 | `service-mesh-infra` | `manifests/infra/service-mesh` — Istio, Kiali, OSSMConsole, OpenTelemetry |
 | 3 | `connectivity-link-infra` | `manifests/infra/connectivity-link` — Kuadrant |
 
 Configurações por ambiente (Gateway API, `DNSPolicy`, sidecar labels) evoluem em `manifests/service-mesh/{platform,dev}` e `manifests/connectivity-link/{platform,dev}` com AppProjects `platform` e `dev`.
+
+### Observabilidade no repositório GitOps
+
+| Recurso | Path | Função |
+|---------|------|--------|
+| `cluster-monitoring-config` | `manifests/infra/namespaces/user-workload-monitoring.yaml` | Habilita User Workload Monitoring no cluster |
+| Namespaces `app-a`, `app-b` | `manifests/infra/namespaces/app-*.yaml` | Label `openshift.io/user-monitoring: "true"` |
+| `PodMonitor` | `manifests/apps/aplication-{a,b}/podmonitor.yaml` | Scrape Prometheus do `istio-proxy` |
+| Kiali + RBAC | `manifests/infra/service-mesh/kiali.yaml`, `kiali-rbac.yaml` | UI e leitura via Thanos Querier (`cluster-monitoring-view`) |
 
 ## Support & Lifecycle
 

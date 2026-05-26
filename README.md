@@ -14,6 +14,7 @@ Repositório: [github.com/thegusmao/rhcl-rhossm](https://github.com/thegusmao/rh
 | Kiali | 2.17.x | Console standalone e topologia do mesh |
 | OSSM Console (OSSMC) | via Kiali Operator | Plugin Service Mesh no console OpenShift |
 | OpenTelemetry | Red Hat build | Coleta de telemetria (base para Tempo) |
+| User Workload Monitoring | OCP Monitoring | Prometheus para `PodMonitor`/`ServiceMonitor` em namespaces de app |
 | cert-manager | Red Hat OpenShift | TLS para gateways (pré-requisito RHCL) |
 
 O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está em [`doc/architecture.md`](doc/architecture.md).
@@ -27,7 +28,7 @@ O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está
 │   ├── applications/       # App-of-apps: AppProjects + Applications
 │   ├── foundation/         # Subscriptions OLM (operadores globais)
 │   ├── infra/
-│   │   ├── namespaces/     # namespaces, ClusterRole/Binding GitOps (sailoperator.io, …)
+│   │   ├── namespaces/     # namespaces, user-workload-monitoring, ClusterRole/Binding GitOps
 │   │   ├── service-mesh/     # Istio, IstioCNI, Kiali, OSSMConsole, OpenTelemetry
 │   │   └── connectivity-link/  # Kuadrant (RHCL)
 │   ├── service-mesh/       # Config por ambiente (platform/dev) — futuro
@@ -52,7 +53,7 @@ flowchart LR
 
 1. **Bootstrap** — `Application` `lab-rhcl-ossm` sincroniza `manifests/applications`.
 2. **foundation** (sync-wave 0) — operadores OLM em `manifests/foundation`.
-3. **infra** (sync-wave 1) — `manifests/infra/namespaces` (RBAC cluster para o controller + namespaces com `managed-by`).
+3. **infra** (sync-wave 1) — `manifests/infra/namespaces` (RBAC cluster, namespaces com `managed-by`, `cluster-monitoring-config` com `enableUserWorkload: true`).
 4. **service-mesh-infra** (sync-wave 2) — `manifests/infra/service-mesh`.
 5. **connectivity-link-infra** (sync-wave 3) — `manifests/infra/connectivity-link`.
 
@@ -101,7 +102,15 @@ O Argo CD passa a gerenciar `foundation`, `infra`, `service-mesh-infra` e `conne
 - `ClusterRole` `openshift-gitops-infra-platform`
 - `ClusterRoleBinding` para `openshift-gitops-argocd-application-controller` em `openshift-gitops`
 
-Inclui também permissões antecipadas para Kiali, Kuadrant, OpenTelemetry, `ClusterRoleBinding` do Kiali, Gateway API e APIs Istio usadas nas fases `platform`/`dev`.
+Inclui também permissões antecipadas para Kiali, Kuadrant, OpenTelemetry, `ClusterRoleBinding` do Kiali (`cluster-monitoring-view`), Gateway API e APIs Istio usadas nas fases `platform`/`dev`.
+
+## Observabilidade (User Workload Monitoring)
+
+A Application `infra` aplica [`manifests/infra/namespaces/user-workload-monitoring.yaml`](manifests/infra/namespaces/user-workload-monitoring.yaml), que define o ConfigMap `cluster-monitoring-config` em `openshift-monitoring` com `enableUserWorkload: true`. Isso implanta o stack Prometheus/Thanos em `openshift-user-workload-monitoring` para coletar `PodMonitor` e `ServiceMonitor` em projetos de usuário.
+
+Os namespaces `app-a` e `app-b` recebem a label `openshift.io/user-monitoring: "true"`. As Applications `aplicacao-a` e `aplicacao-b` (projeto `dev`) publicam `PodMonitor` que expõem métricas do sidecar Envoy (`/stats/prometheus`).
+
+O Kiali consulta métricas agregadas via Thanos Querier (`thanos-querier.openshift-monitoring.svc:9091`), com RBAC em [`manifests/infra/service-mesh/kiali-rbac.yaml`](manifests/infra/service-mesh/kiali-rbac.yaml).
 
 Se o sync de `infra` falhar ao criar o `ClusterRoleBinding`, aplique uma vez com cluster-admin:
 
@@ -129,6 +138,11 @@ oc get route kiali -n istio-system
 
 # OSSM Console plugin (após Kiali Ready)
 oc get ossmconsole -n istio-system
+
+# User Workload Monitoring (métricas de sidecar / PodMonitor)
+oc get configmap cluster-monitoring-config -n openshift-monitoring -o jsonpath='{.data.config\.yaml}'
+oc get pods -n openshift-user-workload-monitoring
+oc get podmonitor -n app-a
 ```
 
 No console OpenShift: categoria **Service Mesh** no menu principal (refresh do browser se solicitado após o install do plugin).
@@ -148,6 +162,7 @@ Pastas reservadas: `manifests/service-mesh/{platform,dev}`, `manifests/connectiv
 - [OSSM 3.2 — Installing](https://docs.redhat.com/en/documentation/red_hat_openshift_service_mesh/3.2/html/installing/ossm-installing-service-mesh)
 - [RHCL 1.3 — Installing on OCP](https://docs.redhat.com/en/documentation/red_hat_connectivity_link/1.3/html/installing_on_openshift_container_platform/rhcl-install-on-ocp)
 - [OpenShift GitOps](https://docs.redhat.com/en/documentation/red_hat_openshift_gitops)
+- [Enabling monitoring for user-defined projects](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/monitoring/enabling-monitoring-for-user-defined-projects)
 
 ## Licença
 
