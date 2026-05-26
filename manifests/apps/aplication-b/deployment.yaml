@@ -43,6 +43,6 @@ spec:
               protocol: TCP
           env:
             - name: TARGET_URL
-              value: https://webhook.site/a7379d0a-4060-4026-abc6-82a23b10fe74
+              value: https://webhook.site/85776d11-3adf-401f-986e-f7f2c9575f80
             - name: TIMEOUT
               value: "60"
