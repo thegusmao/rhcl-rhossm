@@ -8,3 +8,4 @@ metadata:
     managed-by: openshift-gitops
     argocd.argoproj.io/managed-by: openshift-gitops
     istio-discovery: enabled
+    istio-injection: true
