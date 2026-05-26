@@ -17,3 +17,10 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: app-a.firesoft.com.br
+      allowedRoutes:
+        namespaces:
+          from: All
