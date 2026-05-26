@@ -12,7 +12,7 @@ metadata:
     zone: edge
 spec:
   addresses:
-    - 10.10.10.240-10.10.10.250
+    - 10.10.10.245-10.10.10.250
   serviceAllocation:
     namespaces:
       - ingress-gateway

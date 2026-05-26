@@ -10,14 +10,12 @@ metadata:
     version: v1
     app.kubernetes.io/component: aplicacao-b
     app.kubernetes.io/instance: aplicacao-b
-  annotations:
-    openshift.io/generated-by: OpenShiftNewApp
 spec:
   type: ClusterIP
   selector:
     deployment: aplicacao-b
   ports:
-    - name: 8080-tcp
+    - name: http
       port: 8080
       protocol: TCP
       targetPort: 8080
