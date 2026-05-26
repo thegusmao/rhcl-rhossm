@@ -1,0 +1,48 @@
+# Deployment secure-app-b — destino do fetch interno de aplicacao-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aplicacao-b
+  namespace: secure-app-b
+  labels:
+    app: aplicacao-b
+    version: v1
+    app.kubernetes.io/component: aplicacao-b
+    app.kubernetes.io/instance: aplicacao-b
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"aplicacao-b:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"aplicacao-b\")].image"}]'
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  selector:
+    matchLabels:
+      deployment: aplicacao-b
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: aplicacao-b
+        version: v1
+        deployment: aplicacao-b
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+    spec:
+      containers:
+        - name: aplicacao-b
+          image: aplicacao-b:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: TARGET_URL
+              value: https://webhook.site/85776d11-3adf-401f-986e-f7f2c9575f80
+            - name: TIMEOUT
+              value: "60"

@@ -1,0 +1,16 @@
+# ImageStream de saída do build Source-to-Image
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: aplicacao-a
+  namespace: secure-app-a
+  labels:
+    app: aplicacao-a
+    app.kubernetes.io/component: aplicacao-a
+    app.kubernetes.io/instance: aplicacao-a
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+spec:
+  lookupPolicy:
+    local: false

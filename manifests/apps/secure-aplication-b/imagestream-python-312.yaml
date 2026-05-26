@@ -1,0 +1,27 @@
+# Builder image S2I
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: python-312
+  namespace: secure-app-b
+  labels:
+    app: aplicacao-b
+    app.kubernetes.io/component: aplicacao-b
+    app.kubernetes.io/instance: aplicacao-b
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      annotations:
+        openshift.io/imported-from: registry.access.redhat.com/ubi9/python-312:latest
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9/python-312:latest
+      importPolicy:
+        importMode: Legacy
+      referencePolicy:
+        type: Source

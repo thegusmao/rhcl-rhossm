@@ -1,0 +1,8 @@
+# Namespace do agente istio-csr (cert-manager + mesh internal CA)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-csr
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops

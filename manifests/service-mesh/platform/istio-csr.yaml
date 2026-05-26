@@ -1,0 +1,21 @@
+# istio-csr — workload mTLS assinado pela intermediate internal.firesoft.com.br
+#
+# Pré-requisitos: ClusterIssuer firesoft-internal Ready; namespace istio-csr.
+# Referência: OSSM 3.2 — cert-manager e istio-csr
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: IstioCSR
+metadata:
+  name: default
+  namespace: istio-csr
+spec:
+  istioCSRConfig:
+    certManager:
+      issuerRef:
+        name: firesoft-internal
+        kind: ClusterIssuer
+        group: cert-manager.io
+    istiodTLSConfig:
+      trustDomain: cluster.local
+    istio:
+      namespace: istio-system

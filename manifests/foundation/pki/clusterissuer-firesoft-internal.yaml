@@ -1,0 +1,11 @@
+# ClusterIssuer — emite certs de workload mTLS (istio-csr)
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: firesoft-internal
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  ca:
+    secretName: firesoft-internal-ca

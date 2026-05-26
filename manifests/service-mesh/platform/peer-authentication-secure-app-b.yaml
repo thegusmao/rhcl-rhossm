@@ -1,0 +1,10 @@
+# mTLS STRICT — apenas tráfego criptografado entre sidecars em secure-app-b
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: secure-app-b
+spec:
+  mtls:
+    mode: STRICT

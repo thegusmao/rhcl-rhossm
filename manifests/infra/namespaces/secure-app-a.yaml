@@ -1,0 +1,11 @@
+# Namespace secure-app-a — workloads com mTLS STRICT (mesh Firesoft internal CA)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secure-app-a
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops
+    istio-discovery: enabled
+    istio-injection: enabled
+    openshift.io/user-monitoring: "true"

@@ -11,6 +11,9 @@ spec:
       namespace: 'app-*'
       server: https://kubernetes.default.svc
     - name: local
+      namespace: 'secure-app-*'
+      server: https://kubernetes.default.svc
+    - name: local
       namespace: '*-apps'
       server: https://kubernetes.default.svc
     - name: local

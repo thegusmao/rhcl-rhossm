@@ -15,9 +15,22 @@ Repositório: [github.com/thegusmao/rhcl-rhossm](https://github.com/thegusmao/rh
 | OSSM Console (OSSMC) | via Kiali Operator | Plugin Service Mesh no console OpenShift |
 | OpenTelemetry | Red Hat build | Coleta de telemetria (base para Tempo) |
 | User Workload Monitoring | OCP Monitoring | Prometheus para `PodMonitor`/`ServiceMonitor` em namespaces de app |
-| cert-manager | Red Hat OpenShift | TLS para gateways (pré-requisito RHCL) |
+| cert-manager | Red Hat OpenShift | TLS para gateways e PKI Firesoft (namespace `cert-manager` no cluster) |
 
 O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está em [`doc/architecture.md`](doc/architecture.md).
+
+### Stack secure Firesoft (HTTPS + mTLS)
+
+| Camada | Recurso | Path |
+|--------|---------|------|
+| PKI | Root + intermediárias `external` / `internal` | [`manifests/foundation/pki/`](manifests/foundation/pki/) |
+| Mesh | istio-csr + `PeerAuthentication` STRICT | [`manifests/service-mesh/platform/`](manifests/service-mesh/platform/) |
+| Borda | `secure-gateway` + `TLSPolicy` | [`manifests/connectivity-link/platform/`](manifests/connectivity-link/platform/) |
+| Apps | `secure-app-a` → `secure-app-b` | [`manifests/apps/secure-aplication-{a,b}/`](manifests/apps/) |
+
+Bootstrap da Root CA e verificação: [`doc/pki/firesoft-ca.md`](doc/pki/firesoft-ca.md).
+
+URL de teste: `https://secure-app-a.external.firesoft.com.br/` (VIP MetalLB do `secure-gateway`).
 
 ## Estrutura do repositório
 
@@ -31,9 +44,11 @@ O blueprint de arquitetura multi-cluster (prod/DR, MetalLB, CoreDNS, mTLS) está
 │   │   ├── namespaces/     # namespaces, user-workload-monitoring, ClusterRole/Binding GitOps
 │   │   ├── service-mesh/     # Istio, IstioCNI, Kiali, OSSMConsole, OpenTelemetry
 │   │   └── connectivity-link/  # Kuadrant (RHCL)
-│   ├── service-mesh/       # Config por ambiente (platform/dev) — futuro
-│   └── connectivity-link/  # Config RHCL por ambiente — futuro
+│   ├── foundation/pki/     # PKI Firesoft (ClusterIssuers, intermediates)
+│   ├── service-mesh/       # istio-csr, PeerAuthentication (platform)
+│   └── connectivity-link/  # edge-gateway, secure-gateway, HTTPRoutes
 └── doc/
+    └── pki/                # Instruções geração Root CA e bootstrap
 ```
 
 ### Fluxo GitOps (app-of-apps)
@@ -63,6 +78,8 @@ flowchart LR
 | `infra` | `manifests/infra/namespaces` | `infra` |
 | `service-mesh-infra` | `manifests/infra/service-mesh` | `infra` |
 | `connectivity-link-infra` | `manifests/infra/connectivity-link` | `infra` |
+| `service-mesh-platform` | `manifests/service-mesh/platform` | `infra` |
+| `secure-aplicacao-a` / `secure-aplicacao-b` | `manifests/apps/secure-aplication-*` | `dev` |
 
 ## Pré-requisitos
 
@@ -70,7 +87,7 @@ flowchart LR
 - `cluster-admin` para bootstrap e Subscriptions
 - Catálogo `redhat-operators` disponível
 - Subscriptions Red Hat ativas (OSSM, RHCL, OCP)
-- **cert-manager Operator for Red Hat OpenShift** — se já existir no cluster, revise [`manifests/foundation/04-subscription-cert-manager.yaml`](manifests/foundation/04-subscription-cert-manager.yaml) antes do sync para evitar conflito OLM
+- **cert-manager** instalado no namespace `cert-manager` (este repositório não instala o operador; [`04-subscription-cert-manager.yaml`](manifests/foundation/04-subscription-cert-manager.yaml) permanece comentado). Antes do sync da PKI, crie o Secret `firesoft-root-ca` conforme [`doc/pki/firesoft-ca.md`](doc/pki/firesoft-ca.md)
 
 ## Bootstrap (primeira instalação)
 
@@ -153,9 +170,9 @@ No console OpenShift: categoria **Service Mesh** no menu principal (refresh do b
 |---------|-----|
 | `infra` | Operadores e instalação base (`foundation`, `infra`, `service-mesh-infra`, `connectivity-link-infra`) |
 | `platform` | Recursos compartilhados em namespaces de plataforma (futuro) |
-| `dev` | Workloads e políticas por aplicação (futuro) |
+| `dev` | Workloads (`aplicacao-*`, `secure-aplicacao-*`) e HTTPRoutes RHCL |
 
-Pastas reservadas: `manifests/service-mesh/{platform,dev}`, `manifests/connectivity-link/{platform,dev}`.
+Pastas: `manifests/service-mesh/platform`, `manifests/connectivity-link/{platform,dev}`.
 
 ## Documentação Red Hat
 

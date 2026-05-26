@@ -1,0 +1,32 @@
+# Application dev — workload aplicacao-a em secure-app-a
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: secure-aplicacao-a
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: dev
+  source:
+    repoURL: https://github.com/thegusmao/rhcl-rhossm.git
+    targetRevision: main
+    path: manifests/apps/secure-aplication-a
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secure-app-a
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: aplicacao-a
+      namespace: secure-app-a
+      jsonPointers:
+        - /spec/template/spec/containers/0/image

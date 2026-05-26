@@ -1,15 +1,15 @@
-# Permite HTTPRoutes do namespace app-a anexarem ao Gateway em openshift-ingress
-#---
+# Permite HTTPRoutes do namespace secure-app-a anexarem ao secure-gateway
+---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
-  name: allow-httproutes-from-app-a
+  name: allow-httproutes-from-secure-app-a
   namespace: ingress-gateway
 spec:
   from:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      namespace: app-a
+      namespace: secure-app-a
   to:
     - group: gateway.networking.k8s.io
       kind: Gateway

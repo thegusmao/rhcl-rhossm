@@ -1,0 +1,48 @@
+# Deployment secure-app-a — chama aplicacao-b em secure-app-b via mesh mTLS
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aplicacao-a
+  namespace: secure-app-a
+  labels:
+    app: aplicacao-a
+    version: v1
+    app.kubernetes.io/component: aplicacao-a
+    app.kubernetes.io/instance: aplicacao-a
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"aplicacao-a:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"aplicacao-a\")].image"}]'
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  selector:
+    matchLabels:
+      deployment: aplicacao-a
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: aplicacao-a
+        version: v1
+        deployment: aplicacao-a
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+    spec:
+      containers:
+        - name: aplicacao-a
+          image: aplicacao-a:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: TARGET_URL
+              value: http://aplicacao-b.secure-app-b.svc.cluster.local:8080/fetch
+            - name: TIMEOUT
+              value: "60"

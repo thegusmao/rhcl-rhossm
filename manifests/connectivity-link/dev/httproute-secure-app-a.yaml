@@ -1,0 +1,26 @@
+# HTTPRoute — expõe aplicacao-a (secure) via secure-gateway HTTPS
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: secure-app-a-external
+  namespace: secure-app-a
+  labels:
+    app: aplicacao-a
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: secure-gateway
+      namespace: ingress-gateway
+      sectionName: https-external-wildcard
+  hostnames:
+    - secure-app-a.external.firesoft.com.br
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: aplicacao-a
+          port: 8080

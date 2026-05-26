@@ -1,0 +1,11 @@
+# ClusterIssuer — Root CA Firesoft (Secret firesoft-root-ca em cert-manager)
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: firesoft-root
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  ca:
+    secretName: firesoft-root-ca

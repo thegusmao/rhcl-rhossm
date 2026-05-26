@@ -1,0 +1,35 @@
+# Build S2I — backend para secure-app-a (mesh)
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: aplicacao-b
+  namespace: secure-app-b
+  labels:
+    app: aplicacao-b
+    app.kubernetes.io/component: aplicacao-b
+    app.kubernetes.io/instance: aplicacao-b
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+spec:
+  failedBuildsHistoryLimit: 5
+  successfulBuildsHistoryLimit: 5
+  runPolicy: Serial
+  output:
+    to:
+      kind: ImageStreamTag
+      name: aplicacao-b:latest
+  source:
+    type: Git
+    git:
+      uri: https://github.com/thegusmao/app-flask-get.git
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python-312:latest
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}

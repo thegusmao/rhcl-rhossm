@@ -1,0 +1,22 @@
+# AuthPolicy permissiva — GET anônimo em hosts external.firesoft.com.br
+---
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  name: secure-external-permissive
+  namespace: ingress-gateway
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: secure-gateway
+  when:
+    - predicate: request.method == 'GET' && request.host.endsWith('.external.firesoft.com.br')
+  rules:
+    authentication:
+      anonymous:
+        anonymous: {}
+    authorization:
+      allow-all:
+        opa:
+          rego: "allow = true"

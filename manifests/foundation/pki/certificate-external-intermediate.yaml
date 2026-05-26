@@ -1,0 +1,27 @@
+# Intermediate CA — external.firesoft.com.br (Gateway / north-south TLS)
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: firesoft-external-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  isCA: true
+  commonName: Firesoft External Issuing CA
+  secretName: firesoft-external-ca
+  duration: 43800h
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  subject:
+    organizations:
+      - Firesoft
+    organizationalUnits:
+      - external.firesoft.com.br
+  issuerRef:
+    name: firesoft-root
+    kind: ClusterIssuer
+    group: cert-manager.io
