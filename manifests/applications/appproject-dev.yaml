@@ -8,13 +8,10 @@ metadata:
 spec:
   destinations:
     - name: local
+      namespace: 'app-*'
+      server: https://kubernetes.default.svc
+    - name: local
       namespace: '*-apps'
-      server: https://kubernetes.default.svc
-    - name: local
-      namespace: app-a
-      server: https://kubernetes.default.svc
-    - name: local
-      namespace: app-b
       server: https://kubernetes.default.svc
     - name: local
       namespace: bookinfo
