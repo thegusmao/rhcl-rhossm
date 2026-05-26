@@ -1,0 +1,19 @@
+# Pool de IPs externos para Services type=LoadBalancer (ex.: Gateway Istio)
+#
+# IMPORTANTE: em modo L2 o range deve estar na MESMA sub-rede L2 dos nós do cluster.
+# Ajuste spec.addresses antes do sync (ex.: faixa reservada no hypervisor/VLAN do lab).
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: edge-pool
+  namespace: metallb-system
+  labels:
+    zone: edge
+spec:
+  addresses:
+    - 10.10.10.240-10.10.10.250
+  serviceAllocation:
+    namespaces:
+      - ingress-gateway
+      - openshift-ingress

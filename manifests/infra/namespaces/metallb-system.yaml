@@ -1,0 +1,11 @@
+# Namespace do MetalLB Operator e CRs metallb.io
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metallb-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops
+    openshift.io/cluster-monitoring: "true"

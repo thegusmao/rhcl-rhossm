@@ -1,0 +1,28 @@
+# Application metallb-infra — MetalLB, IPAddressPool e L2Advertisement
+#
+# sync-wave 2: após namespaces/OLM (infra wave 1 + foundation); antes do Gateway RHCL.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb-infra
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: infra
+  source:
+    repoURL: https://github.com/thegusmao/rhcl-rhossm.git
+    targetRevision: main
+    path: manifests/infra/metallb
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true

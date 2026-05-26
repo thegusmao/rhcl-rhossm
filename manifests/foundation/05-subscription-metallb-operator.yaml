@@ -1,0 +1,16 @@
+# MetalLB Operator — LoadBalancer em clusters bare-metal / sem cloud LB
+#
+# Requer namespace metallb-system e OperatorGroup (manifests/infra/namespaces).
+# Referência: https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/networking_operators/metallb-operator
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: metallb-operator
+  namespace: metallb-system
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: metallb-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
