@@ -14,3 +14,8 @@ spec:
   version: v1.27-latest
   updateStrategy:
     type: InPlace
+  values:
+    meshConfig:
+      discoverySelectors:
+        - matchLabels:
+            istio-discovery: enabled

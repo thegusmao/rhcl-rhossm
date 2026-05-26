@@ -1,0 +1,25 @@
+# Application dev — workload aplicacao-a (S2I Flask) em app-a
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aplicacao-a
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: dev
+  source:
+    repoURL: https://github.com/thegusmao/rhcl-rhossm.git
+    targetRevision: main
+    path: manifests/apps/aplication-a
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app-a
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true

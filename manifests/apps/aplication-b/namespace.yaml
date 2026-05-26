@@ -1,0 +1,10 @@
+# Namespace da aplicação B (projeto dev)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-b
+  labels:
+    managed-by: openshift-gitops
+    argocd.argoproj.io/managed-by: openshift-gitops
+    istio-discovery: enabled

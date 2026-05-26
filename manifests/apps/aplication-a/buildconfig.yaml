@@ -1,0 +1,35 @@
+# Build S2I a partir do repositório Git (equivalente a oc new-app …~git)
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: aplicacao-a
+  namespace: app-a
+  labels:
+    app: aplicacao-a
+    app.kubernetes.io/component: aplicacao-a
+    app.kubernetes.io/instance: aplicacao-a
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+spec:
+  failedBuildsHistoryLimit: 5
+  successfulBuildsHistoryLimit: 5
+  runPolicy: Serial
+  output:
+    to:
+      kind: ImageStreamTag
+      name: aplicacao-a:latest
+  source:
+    type: Git
+    git:
+      uri: https://github.com/thegusmao/app-flask-get.git
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python-312:latest
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}
