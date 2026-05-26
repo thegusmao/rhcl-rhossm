@@ -1,4 +1,4 @@
-# Namespace da aplicação B (projeto dev)
+# Namespace da aplicação A (projeto dev)
 ---
 apiVersion: v1
 kind: Namespace
