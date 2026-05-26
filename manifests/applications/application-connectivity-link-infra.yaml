@@ -1,6 +1,6 @@
-# Application connectivity-link-infra — CR Kuadrant (RHCL)
+# Application connectivity-link-infra — Gateway, GatewayClass e políticas RHCL (edge)
 #
-# sync-wave 3: depende do OSSM e do namespace kuadrant-system (infra).
+# sync-wave 4: depende de kuadrant-infra e service-mesh-infra.
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -8,7 +8,7 @@ metadata:
   name: connectivity-link-infra
   namespace: openshift-gitops
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/thegusmao/rhcl-rhossm.git
     targetRevision: main
-    path: manifests/infra/connectivity-link
+    path: manifests/connectivity-link/platform
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:

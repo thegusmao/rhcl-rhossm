@@ -1,21 +1,24 @@
-# Application dev — workload aplicacao-b (S2I Flask) em app-b
+# Application kuadrant-infra — CR Kuadrant (RHCL)
+#
+# sync-wave 3: depende do OSSM e do namespace kuadrant-system (infra).
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aplicacao-b
+  name: kuadrant-infra
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
-  project: dev
+  project: infra
   source:
     repoURL: https://github.com/thegusmao/rhcl-rhossm.git
     targetRevision: main
-    path: manifests/apps/aplication-b
+    path: manifests/infra/connectivity-link
   destination:
     server: https://kubernetes.default.svc
-    namespace: app-b
   syncPolicy:
     automated:
       prune: true
@@ -23,10 +26,3 @@ spec:
     syncOptions:
       - ApplyOutOfSyncOnly=true
       - CreateNamespace=true
-  ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      name: aplicacao-b
-      namespace: app-b
-      jsonPointers:
-        - /spec/template/spec/containers/0/image

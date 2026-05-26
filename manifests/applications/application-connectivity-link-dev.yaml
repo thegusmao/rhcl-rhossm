@@ -1,10 +1,14 @@
-# Application dev — workload aplicacao-b (S2I Flask) em app-b
+# Application connectivity-link-dev — HTTPRoutes e políticas RHCL por aplicação
+#
+# sync-wave 5: depende do Gateway (connectivity-link-infra).
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aplicacao-b
+  name: connectivity-link-dev
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
@@ -12,10 +16,9 @@ spec:
   source:
     repoURL: https://github.com/thegusmao/rhcl-rhossm.git
     targetRevision: main
-    path: manifests/apps/aplication-b
+    path: manifests/connectivity-link/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: app-b
   syncPolicy:
     automated:
       prune: true
@@ -23,10 +26,3 @@ spec:
     syncOptions:
       - ApplyOutOfSyncOnly=true
       - CreateNamespace=true
-  ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      name: aplicacao-b
-      namespace: app-b
-      jsonPointers:
-        - /spec/template/spec/containers/0/image
