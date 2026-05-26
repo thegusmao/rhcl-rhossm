@@ -13,7 +13,7 @@ spec:
       kind: Gateway
       name: edge-gateway
       namespace: ingress-gateway
-      sectionName: http
+      sectionName: http-firesoft
   hostnames:
     - app-a.firesoft.com.br
   rules:
