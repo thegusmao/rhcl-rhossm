@@ -15,7 +15,7 @@ spec:
     path: manifests/apps/aplication-b
   destination:
     server: https://kubernetes.default.svc
-    namespace: app-b
+    namespace: aplicacao-b
   syncPolicy:
     automated:
       prune: true
