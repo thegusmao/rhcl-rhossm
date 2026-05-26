@@ -14,7 +14,7 @@ spec:
       namespace: '*-apps'
       server: https://kubernetes.default.svc
     - name: local
-      namespace: bookinfo
+      namespace: openshift-gitops
       server: https://kubernetes.default.svc
   namespaceResourceWhitelist:
     - group: '*'

@@ -11,9 +11,7 @@ spec:
     kind: Gateway
     name: edge-gateway
   when:
-    - selector: request.host
-      operator: eq
-      value: app-a-super.apps.cluster-vv944.dynamic2.redhatworkshops.io
+    - predicate: request.method == 'GET' && request.host == 'app-a-super.apps.cluster-vv944.dynamic2.redhatworkshops.io'
   rules:
     authentication:
       anonymous:
