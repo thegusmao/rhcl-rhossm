@@ -136,6 +136,12 @@ oc apply -f manifests/infra/namespaces/clusterrole-openshift-gitops-infra.yaml
 oc apply -f manifests/infra/namespaces/clusterrolebinding-openshift-gitops-infra.yaml
 ```
 
+## Mesh + istio-csr (Firesoft CA)
+
+O Istio CR em [`manifests/infra/service-mesh/istio.yaml`](manifests/infra/service-mesh/istio.yaml) define `global.caAddress` para o istio-csr **e** `pilot.env.ENABLE_CA_SERVER=false`. Sem desativar o CA embutido do istiod, o ConfigMap `istio-ca-root-cert` é reescrito com `O=cluster.local` e os sidecars falham TLS para o istio-csr.
+
+PKI e trust: [`doc/pki/firesoft-ca.md`](doc/pki/firesoft-ca.md).
+
 ## Validação
 
 ```bash

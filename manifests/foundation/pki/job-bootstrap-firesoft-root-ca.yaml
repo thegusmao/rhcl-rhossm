@@ -1,0 +1,95 @@
+# Bootstrap da Root CA Firesoft no cluster vazio (idempotente).
+# Cria o Secret firesoft-root-ca apenas se ainda não existir.
+# A Root inclui keyUsage keyCertSign exigido por validadores de CA.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bootstrap-firesoft-root-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bootstrap-firesoft-root-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bootstrap-firesoft-root-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bootstrap-firesoft-root-ca
+subjects:
+  - kind: ServiceAccount
+    name: bootstrap-firesoft-root-ca
+    namespace: cert-manager
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bootstrap-firesoft-root-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: bootstrap-firesoft-root-ca
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              if oc get secret firesoft-root-ca -n cert-manager &>/dev/null; then
+                echo "firesoft-root-ca already exists — skipping bootstrap"
+                exit 0
+              fi
+              microdnf install -y openssl >/dev/null 2>&1 || yum install -y openssl >/dev/null
+              openssl genrsa -out /tmp/firesoft-root.key 4096
+              cat >/tmp/openssl.cnf <<'EOF'
+              [req]
+              distinguished_name = dn
+              x509_extensions = v3_ca
+              prompt = no
+
+              [dn]
+              C = BR
+              O = Firesoft
+              CN = Firesoft Root CA
+
+              [v3_ca]
+              basicConstraints = critical, CA:TRUE
+              keyUsage = critical, keyCertSign, cRLSign
+              subjectKeyIdentifier = hash
+              authorityKeyIdentifier = keyid:always,issuer
+              EOF
+              openssl req -x509 -new -nodes \
+                -key /tmp/firesoft-root.key \
+                -sha256 -days 3650 \
+                -out /tmp/firesoft-root.crt \
+                -config /tmp/openssl.cnf \
+                -extensions v3_ca
+              oc create secret tls firesoft-root-ca -n cert-manager \
+                --cert=/tmp/firesoft-root.crt \
+                --key=/tmp/firesoft-root.key
+              echo "firesoft-root-ca created"

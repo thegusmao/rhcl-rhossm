@@ -1,4 +1,4 @@
-# PKI Firesoft — geração da Root CA e bootstrap no cluster
+# PKI Firesoft — bootstrap GitOps e mesh trust
 
 Hierarquia:
 
@@ -6,98 +6,104 @@ Hierarquia:
 - **Intermediate External** — `external.firesoft.com.br` (certificados de servidor no Gateway RHCL)
 - **Intermediate Internal** — `internal.firesoft.com.br` (mTLS entre workloads via istio-csr)
 
-As intermediárias são emitidas pelo cert-manager (GitOps em `manifests/foundation/pki/`) após a Root estar no cluster.
+## 1. Bootstrap da Root (cluster vazio — GitOps)
 
-## 1. Gerar a Root CA (uma vez, fora do cluster)
+O Job `bootstrap-firesoft-root-ca` em `manifests/foundation/pki/` cria o Secret `firesoft-root-ca` no namespace `cert-manager` **somente se ele ainda não existir**, com extensões X.509 de CA (`keyCertSign`, `cRLSign`).
+
+Ordem Argo CD:
+
+1. `foundation-pki` (wave 0) — bootstrap Root + `ClusterIssuer` `firesoft-root` + intermediárias
+2. `service-mesh-platform` (wave 3+) — CronJob trust + `Certificate` em `istio-system` + `IstioCSR`
+
+### Root manual (opcional, lab existente)
+
+Se você já gerou a Root fora do cluster, crie o Secret **antes** do primeiro sync da PKI (o Job de bootstrap não sobrescreve):
 
 ```bash
-mkdir -p ~/firesoft-pki && cd ~/firesoft-pki
-
 openssl genrsa -out firesoft-root.key 4096
-
-openssl req -x509 -new -nodes \
-  -key firesoft-root.key \
-  -sha256 -days 3650 \
-  -out firesoft-root.crt \
-  -subj "/C=BR/O=Firesoft/CN=Firesoft Root CA"
-
-# Copiar para uso em curl/browser
+cat > openssl-root.cnf <<'EOF'
+[req]
+distinguished_name = dn
+x509_extensions = v3_ca
+prompt = no
+[dn]
+C = BR
+O = Firesoft
+CN = Firesoft Root CA
+[v3_ca]
+basicConstraints = critical, CA:TRUE
+keyUsage = critical, keyCertSign, cRLSign
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+EOF
+openssl req -x509 -new -nodes -key firesoft-root.key -sha256 -days 3650 \
+  -out firesoft-root.crt -config openssl-root.cnf -extensions v3_ca
 cp firesoft-root.crt ~/firesoft-root.crt
+
+oc create secret tls firesoft-root-ca -n cert-manager \
+  --cert=firesoft-root.crt --key=firesoft-root.key
 ```
 
-**Não commitar** `firesoft-root.key` no Git.
+**Não commitar** chaves privadas no Git.
 
-## 2. Bootstrap no namespace cert-manager
+## 2. Mesh trust (istio-csr)
 
-O operador cert-manager já está instalado no namespace `cert-manager`. Crie o Secret antes do Argo CD sincronizar `manifests/foundation/pki/`:
+| Recurso | Conteúdo | Motivo |
+|---------|----------|--------|
+| `firesoft-istio-trust` | Intermediate `firesoft-internal-ca` | `IstioCSR.spec...istioCACertificate` exige `Certificate Sign` |
+| `istio-ca-root-cert` | Cadeia intermediate + root | Sidecars validam o gRPC do istio-csr e certs de workload |
+
+O **CronJob** `sync-firesoft-mesh-trust` reconcilia esses ConfigMaps a cada 2 minutos (evita regressão com `O=cluster.local`).
+
+`IstioCSR` usa sync-wave **4** (após Certificate + CronJob).
 
 ```bash
-oc create secret generic firesoft-root-ca -n cert-manager \
-  --from-file=tls.crt=firesoft-root.crt \
-  --from-file=tls.key=firesoft-root.key
+oc wait --for=condition=Ready certificate/firesoft-internal-ca -n istio-system --timeout=300s
+oc get cronjob sync-firesoft-mesh-trust -n istio-system
+oc get istiocsr default -n istio-csr
 ```
 
-Verifique:
+## 3. Exportar Root para testes locais
 
 ```bash
-oc get secret firesoft-root-ca -n cert-manager
+oc get secret firesoft-root-ca -n cert-manager \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d > tmp/firesoft-root.crt
 ```
 
-## 3. Ordem GitOps (Argo CD)
-
-1. `foundation-pki` — `ClusterIssuer` `firesoft-root` + intermediárias em `cert-manager`
-2. `service-mesh-platform` (sync-wave 3):
-   - Job `sync-firesoft-root-trust` → ConfigMap `firesoft-istio-trust` (root pública, lida de `firesoft-root-ca`)
-   - `Certificate` `firesoft-internal-ca` em **`istio-system`** (via `ClusterIssuer firesoft-root`, renovação automática)
-   - `Issuer` `firesoft-internal` em `istio-system`
-   - `IstioCSR` com `istioCACertificate` apontando para `firesoft-istio-trust`
-
-**Não** copie manualmente o Secret da intermediate para `istio-system`. O mesh usa a CA emitida em `istio-system`; a intermediate em `cert-manager` permanece para `ClusterIssuer firesoft-internal` (borda/outros usos).
-
-```bash
-oc wait --for=condition=Ready certificate/firesoft-external-ca -n cert-manager --timeout=120s
-oc wait --for=condition=Ready certificate/firesoft-internal-ca -n cert-manager --timeout=120s
-oc wait --for=condition=Ready certificate/firesoft-internal-ca -n istio-system --timeout=120s
-oc get clusterissuer | grep firesoft
-oc get job sync-firesoft-root-trust -n istio-system
-oc get configmap firesoft-istio-trust -n istio-system
-```
-
-**Importante:** o `IstioCSR` deve incluir `spec.istioCSRConfig.certManager.istioCACertificate`. O ConfigMap `firesoft-istio-trust` deve conter a **intermediate** (`firesoft-internal-ca` em `istio-system`), não a Root — o operador valida `keyUsage: Certificate Sign` (a Root gerada com OpenSSL no lab não tem essa extensão). O Job `sync-firesoft-root-trust` publica a intermediate em `firesoft-istio-trust` e a Root em `istio-ca-root-cert` nos namespaces com `istio-discovery=enabled`.
-
-## 4. Confiança no cliente (lab)
-
-Importe `firesoft-root.crt` no SO/browser ou use:
-
-```bash
-curl --cacert ~/firesoft-root.crt https://secure-app-a.external.firesoft.com.br/
-```
-
-## 5. DNS e VIP do secure-gateway
+## 4. DNS e VIP do secure-gateway
 
 ```bash
 export SECURE_GW_VIP=$(oc get svc -n ingress-gateway \
   -l gateway.networking.k8s.io/gateway-name=secure-gateway \
   -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
-echo "$SECURE_GW_VIP secure-app-a.external.firesoft.com.br" | sudo tee -a /etc/hosts
+echo "$SECURE_GW_VIP secure-app-a.external.firesoft.com.br"
 ```
 
-## 6. Verificação
+## 5. Verificação E2E (pod → gateway MetalLB)
+
+Com `secure-app-a` em Running (2/2):
 
 ```bash
-# PKI
+export SECURE_GW_VIP=$(oc get svc -n ingress-gateway \
+  -l gateway.networking.k8s.io/gateway-name=secure-gateway \
+  -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+oc get secret firesoft-root-ca -n cert-manager \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d > /tmp/firesoft-root.crt
+oc exec -n secure-app-a deploy/aplicacao-a -c aplicacao-a -- \
+  curl -sS -o /dev/null -w '%{http_code}\n' \
+  --cacert /tmp/firesoft-root.crt \
+  -H "Host: secure-app-a.external.firesoft.com.br" \
+  "https://${SECURE_GW_VIP}/"
+```
+
+Esperado: `200`.
+
+## 6. Verificação geral
+
+```bash
 oc get clusterissuer,certificate -A | grep firesoft
-
-# Borda HTTPS
-curl -v --cacert ~/firesoft-root.crt https://secure-app-a.external.firesoft.com.br/
-
-# Mesh mTLS (secure namespaces)
+curl -v --cacert tmp/firesoft-root.crt https://secure-app-a.external.firesoft.com.br/
 oc get peerauthentication -n secure-app-a
-oc get peerauthentication -n secure-app-b
-
-# istio-csr
 oc get deployment -n istio-csr
 oc get istiocsr -n istio-csr
 ```
-
-A resposta HTTP da app A deve incluir dados obtidos da app B (`/fetch` interno via mesh).

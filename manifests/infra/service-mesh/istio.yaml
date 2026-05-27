@@ -17,6 +17,11 @@ spec:
   values:
     global:
       caAddress: cert-manager-istio-csr.istio-csr.svc:443
+    pilot:
+      env:
+        # Desativa CA embutida do istiod; trust vem do istio-csr + cert-manager (Firesoft).
+        # Sem isso, istiod reescreve istio-ca-root-cert com O=cluster.local.
+        ENABLE_CA_SERVER: "false"
     meshConfig:
       discoverySelectors:
         - matchLabels:

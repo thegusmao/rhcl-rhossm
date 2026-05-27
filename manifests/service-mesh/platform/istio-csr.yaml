@@ -1,7 +1,7 @@
 # istio-csr — mTLS mesh via cert-manager (Issuer em istio-system + trust Firesoft root)
 #
 # Pré-requisitos (sync-wave):
-#   1 — Job sync-firesoft-root-trust → firesoft-istio-trust (intermediate) + istio-ca-root-cert (root)
+#   2 — CronJob sync-firesoft-mesh-trust → firesoft-istio-trust + istio-ca-root-cert
 #   1 — Certificate firesoft-internal-ca + Issuer firesoft-internal (istio-system)
 #   2 — ClusterIssuers PKI (foundation-pki)
 ---
@@ -11,7 +11,7 @@ metadata:
   name: default
   namespace: istio-csr
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   istioCSRConfig:
     certManager:

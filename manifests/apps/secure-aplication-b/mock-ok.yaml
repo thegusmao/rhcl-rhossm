@@ -1,0 +1,42 @@
+# Resposta HTTP 200 estável para o encadeamento aplicacao-a → aplicacao-b → TARGET_URL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-ok
+  namespace: secure-app-b
+  labels:
+    app: mock-ok
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mock-ok
+  template:
+    metadata:
+      labels:
+        app: mock-ok
+    spec:
+      containers:
+        - name: mock
+          image: image-registry.openshift-image-registry.svc:5000/secure-app-b/python-312:latest
+          command:
+            - python3
+            - -m
+            - http.server
+            - "8080"
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-ok
+  namespace: secure-app-b
+spec:
+  selector:
+    app: mock-ok
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
