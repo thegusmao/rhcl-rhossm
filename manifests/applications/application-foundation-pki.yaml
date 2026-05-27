@@ -1,0 +1,28 @@
+# Application foundation — Subscriptions OLM (OSSM, RHCL, Kiali, OTel, cert-manager)
+#
+# sync-wave 0: instalar operadores antes das Applications de infra (namespaces, mesh, RHCL).
+# Ajuste repoURL para corresponder à URL do secret em bootstrap/03-secret-lab-rhcl-ossm.yaml.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: foundation-pki
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: infra
+  source:
+    repoURL: https://github.com/thegusmao/rhcl-rhossm.git
+    targetRevision: main
+    path: manifests/foundation/pki
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true

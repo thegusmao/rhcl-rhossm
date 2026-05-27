@@ -13,7 +13,7 @@ spec:
     certManager:
       issuerRef:
         name: firesoft-internal
-        kind: ClusterIssuer
+        kind: Issuer
         group: cert-manager.io
     istiodTLSConfig:
       trustDomain: cluster.local
