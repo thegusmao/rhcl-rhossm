@@ -1,1 +1,3 @@
 bootstrap/03-secret-lab-rhcl-ossm.yaml
+tmp/
+.cursor/

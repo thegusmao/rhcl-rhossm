@@ -1,13 +1,17 @@
-# istio-csr — workload mTLS assinado pela intermediate internal.firesoft.com.br
+# istio-csr — mTLS mesh via cert-manager (Issuer em istio-system + trust Firesoft root)
 #
-# Pré-requisitos: ClusterIssuer firesoft-internal Ready; namespace istio-csr.
-# Referência: OSSM 3.2 — cert-manager e istio-csr
+# Pré-requisitos (sync-wave):
+#   0 — Job sync-firesoft-root-trust → ConfigMap firesoft-istio-trust
+#   1 — Certificate firesoft-internal-ca + Issuer firesoft-internal (istio-system)
+#   2 — ClusterIssuers PKI (foundation-pki)
 ---
 apiVersion: operator.openshift.io/v1alpha1
 kind: IstioCSR
 metadata:
   name: default
   namespace: istio-csr
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   istioCSRConfig:
     certManager:
@@ -15,7 +19,13 @@ spec:
         name: firesoft-internal
         kind: Issuer
         group: cert-manager.io
+      istioCACertificate:
+        name: firesoft-istio-trust
+        namespace: istio-system
+        key: root-cert.pem
+    istioDataPlaneNamespaceSelector: istio-discovery=enabled
     istiodTLSConfig:
       trustDomain: cluster.local
     istio:
       namespace: istio-system
+    logLevel: 1

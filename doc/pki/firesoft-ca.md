@@ -45,15 +45,25 @@ oc get secret firesoft-root-ca -n cert-manager
 
 ## 3. Ordem GitOps (Argo CD)
 
-1. `ClusterIssuer` `firesoft-root`
-2. `Certificate` intermediárias (`firesoft-external-ca`, `firesoft-internal-ca`) — aguardar `Ready`
-3. `ClusterIssuer` `firesoft-external` e `firesoft-internal`
+1. `foundation-pki` — `ClusterIssuer` `firesoft-root` + intermediárias em `cert-manager`
+2. `service-mesh-platform` (sync-wave 3):
+   - Job `sync-firesoft-root-trust` → ConfigMap `firesoft-istio-trust` (root pública, lida de `firesoft-root-ca`)
+   - `Certificate` `firesoft-internal-ca` em **`istio-system`** (via `ClusterIssuer firesoft-root`, renovação automática)
+   - `Issuer` `firesoft-internal` em `istio-system`
+   - `IstioCSR` com `istioCACertificate` apontando para `firesoft-istio-trust`
+
+**Não** copie manualmente o Secret da intermediate para `istio-system`. O mesh usa a CA emitida em `istio-system`; a intermediate em `cert-manager` permanece para `ClusterIssuer firesoft-internal` (borda/outros usos).
 
 ```bash
 oc wait --for=condition=Ready certificate/firesoft-external-ca -n cert-manager --timeout=120s
 oc wait --for=condition=Ready certificate/firesoft-internal-ca -n cert-manager --timeout=120s
+oc wait --for=condition=Ready certificate/firesoft-internal-ca -n istio-system --timeout=120s
 oc get clusterissuer | grep firesoft
+oc get job sync-firesoft-root-trust -n istio-system
+oc get configmap firesoft-istio-trust -n istio-system
 ```
+
+**Importante:** o `IstioCSR` deve incluir `spec.istioCSRConfig.certManager.istioCACertificate` (sem isso, os sidecars recebem trust anchor `cluster.local` e falham TLS para o istio-csr).
 
 ## 4. Confiança no cliente (lab)
 

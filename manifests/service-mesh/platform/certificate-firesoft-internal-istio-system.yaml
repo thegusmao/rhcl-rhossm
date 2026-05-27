@@ -1,0 +1,28 @@
+# Intermediate internal em istio-system — emitida pelo ClusterIssuer firesoft-root (GitOps, renovação automática)
+# Substitui cópia manual do Secret firesoft-internal-ca de cert-manager.
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: firesoft-internal-ca
+  namespace: istio-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  isCA: true
+  commonName: Firesoft Internal Issuing CA
+  secretName: firesoft-internal-ca
+  duration: 43800h
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 4096
+  subject:
+    organizations:
+      - Firesoft
+    organizationalUnits:
+      - internal.firesoft.com.br
+  issuerRef:
+    name: firesoft-root
+    kind: ClusterIssuer
+    group: cert-manager.io

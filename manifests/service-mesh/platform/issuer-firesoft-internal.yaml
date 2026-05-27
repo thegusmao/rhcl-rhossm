@@ -1,0 +1,12 @@
+# Issuer namespaced para istio-csr — Secret firesoft-internal-ca renovado pelo Certificate acima
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: firesoft-internal
+  namespace: istio-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  ca:
+    secretName: firesoft-internal-ca
