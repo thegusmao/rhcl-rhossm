@@ -1,5 +1,6 @@
-# Publica a Root Firesoft (tls.crt) em ConfigMap para o istio-csr distribuir nos sidecars.
-# Lê firesoft-root-ca em cert-manager (PKI foundation) — sem chave privada no Git.
+# Sincroniza trust Firesoft para o mesh:
+#   firesoft-istio-trust  → intermediate (firesoft-internal-ca) — IstioCSR exige keyUsage Certificate Sign
+#   istio-ca-root-cert    → root (firesoft-root-ca) — trust anchor nos namespaces istio-discovery=enabled
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -46,6 +47,10 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["firesoft-internal-ca"]
+    verbs: ["get"]
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get", "list", "create", "update", "patch"]
@@ -117,11 +122,18 @@ spec:
             - /bin/bash
             - -ec
             - |
+              echo "waiting for firesoft-internal-ca secret..."
+              for i in $(seq 1 60); do
+                oc get secret firesoft-internal-ca -n istio-system &>/dev/null && break
+                sleep 5
+              done
+              oc get secret firesoft-internal-ca -n istio-system
+              INT_PEM=$(oc get secret firesoft-internal-ca -n istio-system -o jsonpath='{.data.tls\.crt}' | base64 -d)
               ROOT_PEM=$(oc get secret firesoft-root-ca -n cert-manager -o jsonpath='{.data.tls\.crt}' | base64 -d)
               oc create configmap firesoft-istio-trust -n istio-system \
-                --from-literal=root-cert.pem="${ROOT_PEM}" \
+                --from-literal=root-cert.pem="${INT_PEM}" \
                 --dry-run=client -o yaml | oc apply -f -
-              echo "firesoft-istio-trust ConfigMap updated"
+              echo "firesoft-istio-trust updated (intermediate CA for IstioCSR mount)"
               for ns in $(oc get ns -l istio-discovery=enabled -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
                 oc create configmap istio-ca-root-cert -n "${ns}" \
                   --from-literal=root-cert.pem="${ROOT_PEM}" \

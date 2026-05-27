@@ -63,7 +63,7 @@ oc get job sync-firesoft-root-trust -n istio-system
 oc get configmap firesoft-istio-trust -n istio-system
 ```
 
-**Importante:** o `IstioCSR` deve incluir `spec.istioCSRConfig.certManager.istioCACertificate` (sem isso, os sidecars recebem trust anchor `cluster.local` e falham TLS para o istio-csr).
+**Importante:** o `IstioCSR` deve incluir `spec.istioCSRConfig.certManager.istioCACertificate`. O ConfigMap `firesoft-istio-trust` deve conter a **intermediate** (`firesoft-internal-ca` em `istio-system`), não a Root — o operador valida `keyUsage: Certificate Sign` (a Root gerada com OpenSSL no lab não tem essa extensão). O Job `sync-firesoft-root-trust` publica a intermediate em `firesoft-istio-trust` e a Root em `istio-ca-root-cert` nos namespaces com `istio-discovery=enabled`.
 
 ## 4. Confiança no cliente (lab)
 

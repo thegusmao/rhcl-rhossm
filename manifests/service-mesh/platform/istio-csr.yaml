@@ -1,7 +1,7 @@
 # istio-csr — mTLS mesh via cert-manager (Issuer em istio-system + trust Firesoft root)
 #
 # Pré-requisitos (sync-wave):
-#   0 — Job sync-firesoft-root-trust → ConfigMap firesoft-istio-trust
+#   1 — Job sync-firesoft-root-trust → firesoft-istio-trust (intermediate) + istio-ca-root-cert (root)
 #   1 — Certificate firesoft-internal-ca + Issuer firesoft-internal (istio-system)
 #   2 — ClusterIssuers PKI (foundation-pki)
 ---
